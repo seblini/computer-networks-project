@@ -11,6 +11,9 @@ from examples.internet.B00_mini_internet import mini_internet
 from examples.internet.B01_dns_component import dns_component
 import os, sys
 
+from firewall import set_firewall
+from algo import update_BGP_conf
+
 def run(dumpfile=None):
 	###############################################################################
     # Set the platform information
@@ -89,6 +92,10 @@ def run(dumpfile=None):
     
     # Add the ldns layer
     emu.addLayer(ldns)
+
+    set_firewall(base, 2, 'r102', '10.161.0.0/24')
+
+    update_BGP_conf(base, 154, 'router0', 11)
     
     if dumpfile is not None:
        # Save it to a file, so it can be used by other emulators
