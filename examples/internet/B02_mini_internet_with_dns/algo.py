@@ -1,6 +1,11 @@
 def include_reroute(base, AS, router, nextAS):
-    reroute = """sn=$1
-as='u_as4'
+    reroute = """if [ "$#" -ne 2 ]; then
+    echo "Usage: $0 <subnet> <AS_num>"
+    exit 1
+fi
+
+sn=$1
+as="u_as${2}"
 
 cp /etc/bird/bird.conf /etc/bird/bird_new.conf
 
