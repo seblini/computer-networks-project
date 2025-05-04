@@ -12,7 +12,7 @@ from examples.internet.B01_dns_component import dns_component
 import os, sys
 
 from firewall import set_firewall
-from algo import update_BGP_conf
+from algo import include_reroute
 
 def run(dumpfile=None):
 	###############################################################################
@@ -95,7 +95,7 @@ def run(dumpfile=None):
 
     set_firewall(base, 2, 'r102', '10.161.0.0/24')
 
-    update_BGP_conf(base, 154, 'router0', 11)
+    include_reroute(base, 154, 'router0', 11)
     
     if dumpfile is not None:
        # Save it to a file, so it can be used by other emulators

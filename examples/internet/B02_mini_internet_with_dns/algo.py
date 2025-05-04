@@ -1,17 +1,33 @@
-def update_BGP_conf(base, AS, router, nextAS):
-    update = (
-        '#!/bin/bash\n'
-        'birdc\n'
-        f'define prefer_u_as{nextAS} = function() {{\n'
-        'bgp_local_pref = 20;\n'
-        'accept;\n'
-        '};\n'
-        f'reload in u_as{nextAS}'
-    )
+def include_reroute(base, AS, router, nextAS):
+    reroute = """sn=$1
+as='u_as4'
+
+cp /etc/bird/bird.conf /etc/bird/bird_new.conf
+
+sed -i -e "/^protocol bgp ${as} {/{n;N;N;N;N;N;N;N;N;N;d;}" /etc/bird/bird_new.conf
+
+sed -i "/^protocol bgp ${as} {/ a\\\\
+    ipv4 {\\\\
+        table t_bgp;\\\\
+        import filter {\\\\
+          bgp_large_community.add(PROVIDER_COMM);\\\\
+          if net = ${sn} then {\\\\
+            bgp_local_pref = 20;\\\\
+            accept;\\\\
+          } else {\\\\
+            bgp_local_pref = 10;\\\\
+            accept;\\\\
+          }\\\\
+        };\\\\
+        export where bgp_large_community ~ [LOCAL_COMM, CUSTOMER_COMM];\\\\
+        next hop self;\\\\
+    };
+" /etc/bird/bird_new.conf
+
+birdc 'configure "/etc/bird/bird_new.conf"'
+    """
 
     r = base.getAutonomousSystem(AS).getRouter(router)
 
-    # r.addBuildCommand('apt install traceroute')
-    r.setFile('/tmp/update.sh', update)
-    r.appendStartCommand('chmod +x /tmp/update.sh')
-    # r.appendStartCommand('/tmp/update.sh')
+    r.setFile('/bin/reroute.sh', reroute)
+    r.appendStartCommand('chmod +x /bin/reroute.sh')
